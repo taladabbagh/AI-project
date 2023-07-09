@@ -1,14 +1,13 @@
 package com.example.demo;
 
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import javafx.scene.shape.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -23,13 +22,7 @@ public class HelloController2 {
     private static final String CITIES_FILE = "C:/Users/Tala Dabbagh/OneDrive/Desktop/AI/demo/src/main/resources/com/example/demo/Cities.csv";
 
     @FXML
-    private Pane Pane;
-
-    @FXML
-    private TextArea aDist;
-
-    @FXML
-    private TextArea aPath;
+    private Pane imgPane;
 
     @FXML
     private ComboBox<String> comboS;
@@ -38,16 +31,16 @@ public class HelloController2 {
     private ComboBox<String> comboT;
 
     @FXML
+    private TextArea aDist;
+
+    @FXML
+    private TextArea aPath;
+
+    @FXML
     private TextArea gDist;
 
     @FXML
     private TextArea gPath;
-
-    @FXML
-    private ImageView imageV;
-
-    @FXML
-    private Pane imgPane;
 
     @FXML
     private Button resetBtn;
@@ -59,24 +52,14 @@ public class HelloController2 {
 
     @FXML
     public void initialize() {
-
-        String imagePath = "C:/Users/Tala Dabbagh/OneDrive/Desktop/AI/demo/src/main/resources/com/example/demo/palestineMap.png"; // Replace with the actual image path
-        Image image = new Image("file:" + imagePath);
-        imageV.setImage(image);
-        imageV.setPreserveRatio(true);
-
-        imgPane.setPrefWidth(image.getWidth());
-        imgPane.setPrefHeight(image.getHeight());
-
         loadCityCoordinates();
         plotCityCircles();
 
         // Initialize your controller logic here
         // For example, you can set event handlers for buttons or populate ComboBox options
         runB.setOnAction(event -> runAlgorithm());
-        resetBtn.setOnAction(event -> resetFields());
+        resetBtn.setOnAction(event -> reset());
         populateComboBoxes();
-
     }
 
     private void populateComboBoxes() {
@@ -101,15 +84,51 @@ public class HelloController2 {
         }
     }
 
+    private void drawPath(List<String> path, Color color) {
+        Path pathLine = new Path();
+        pathLine.setStroke(color);
+        pathLine.setStrokeWidth(2.0);
+
+        for (int i = 0; i < path.size() - 1; i++) {
+            String city1 = path.get(i);
+            String city2 = path.get(i + 1);
+            double[] coordinates1 = cityCoordinates.get(city1);
+            double[] coordinates2 = cityCoordinates.get(city2);
+            double startX = coordinates1[0];
+            double startY = coordinates1[1];
+            double endX = coordinates2[0];
+            double endY = coordinates2[1];
+
+            if (i == 0) {
+                pathLine.getElements().add(new MoveTo(startX, startY));
+            }
+
+            pathLine.getElements().add(new LineTo(endX, endY));
+        }
+
+        imgPane.getChildren().add(pathLine);
+    }
+
+
     private void plotCityCircles() {
-        imgPane.getChildren().clear();
+        imgPane.getChildren();
         for (Map.Entry<String, double[]> entry : cityCoordinates.entrySet()) {
             String city = entry.getKey();
             double[] coordinates = entry.getValue();
             double x = coordinates[0];
             double y = coordinates[1];
-            Circle circle = new Circle(x, y, 5);
-            circle.setFill(Color.RED);
+            Circle circle = new Circle(x, y, 5, Color.RED);
+            circle.setOnMouseClicked(event -> {
+                if (comboS.getValue() == null) {
+                    comboS.setValue(city);
+                    circle.setFill(Color.BLUE);
+                }
+                // Check if the target city is selected
+                else if (comboT.getValue() == null && !comboS.getValue().isEmpty()) {
+                    comboT.setValue(city);
+                    circle.setFill(Color.GREEN);
+                }
+            });
             imgPane.getChildren().add(circle);
         }
     }
@@ -130,6 +149,7 @@ public class HelloController2 {
         // Run the Greedy algorithm
         List<String> greedyPathList = GreedyAlgorithm.findPath(sourceCity, goalCity);
         if (greedyPathList != null) {
+            drawPath(greedyPathList, Color.YELLOW);
             for (String city : greedyPathList) {
                 greedyPath.append(city).append(" -> ");
             }
@@ -142,6 +162,7 @@ public class HelloController2 {
         // Run the A* algorithm
         List<String> aStarPathList = AStarAlgorithm.findPath(sourceCity, goalCity);
         if (aStarPathList != null) {
+            drawPath(aStarPathList, Color.PURPLE);
             for (String city : aStarPathList) {
                 aStarPath.append(city).append(" -> ");
             }
@@ -167,14 +188,23 @@ public class HelloController2 {
         }
         return distance;
     }
-    private void resetFields() {
-        // Clear the text areas and reset combo boxes and image view
-        aDist.clear();
-        aPath.clear();
+
+    private void reset() {
         comboS.getSelectionModel().clearSelection();
         comboT.getSelectionModel().clearSelection();
+        aDist.clear();
+        aPath.clear();
         gDist.clear();
         gPath.clear();
-        // ...
+
+        imgPane.getChildren().removeIf(node -> node instanceof Path);
+
+
+        for (Node node : imgPane.getChildren()) {
+            if (node instanceof Circle) {
+                Circle circle = (Circle) node;
+                circle.setFill(Color.RED);
+            }
+        }
     }
 }

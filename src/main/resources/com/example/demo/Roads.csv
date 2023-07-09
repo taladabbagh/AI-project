@@ -26,3 +26,31 @@ Ramla , Allyd , 9.0
 Allyd , Jerusalem , 44.8
 Jerusalem , Hebron , 35.0
 Ramla , Hebron , 70.0
+Akka, Safad, 39.0
+Tiberias, Safad, 19.0
+Tiberias, Akka, 12.0
+Nazareth, Akka, 12.0
+Haifa, Akka, 15.0
+Nazareth, Tiberias, 24.0
+Baysan, Tiberias, 33.0
+Haifa, Nazareth, 31.6
+Baysan, Nazareth, 29.7
+Jenin, Nazareth, 26.8
+Jenin, Haifa, 47.0
+Tulkarem, Haifa, 54.0
+Jenin, Baysan, 36.0
+Nablus, Baysan, 74.1
+Nablus, Jenin, 44.4
+Tulkarem, Nablus, 48.0
+Ramallah, Nablus, 90.0
+Jerusalem, Nablus, 80.0
+Allyd, Tulkarem, 71.0
+Jaffa, Tulkarem, 74.0
+Allyd, Jaffa, 23.6
+Ramla, Jaffa, 18.2
+Jerusalem, Ramallah, 21.0
+Allyd, Ramallah, 81.0
+Allyd, Ramla, 9.0
+Jerusalem, Allyd, 44.8
+Hebron, Jerusalem, 35.0
+Hebron, Ramla, 70.0

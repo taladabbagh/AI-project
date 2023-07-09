@@ -8,15 +8,26 @@ import java.util.*;
 public class AStarAlgorithm {
     private static final String CITIES_FILE = "C:/Users/Tala Dabbagh/OneDrive/Desktop/AI/demo/src/main/resources/com/example/demo/Cities.csv";
     private static final String ROADS_FILE = "C:/Users/Tala Dabbagh/OneDrive/Desktop/AI/demo/src/main/resources/com/example/demo/Roads.csv";
+    private static final String AIR_DISTANCE_FILE = "C:/Users/Tala Dabbagh/OneDrive/Desktop/AI/demo/src/main/resources/com/example/demo/AirDistance.csv";
 
     private static Map<String, List<Road>> graph;
     private static Map<String, Double> streetDistances;
+    private static Map<String, Double> airDistances;
 
-    // Inside AStarAlgorithm class
+//    public static void main(String[] args) {
+//        readInputFiles();
+//        List<String> path = findPath("Safad", "Hebron");
+//        if (path != null) {
+//            System.out.println("Path found: " + path);
+//        } else {
+//            System.out.println("No path found.");
+//        }
+//    }
 
     public static void readInputFiles() {
         graph = new HashMap<>();
         streetDistances = new HashMap<>();
+        airDistances = new HashMap<>();
 
         // Read Cities.csv file
         try (BufferedReader br = new BufferedReader(new FileReader(CITIES_FILE))) {
@@ -24,7 +35,11 @@ public class AStarAlgorithm {
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
                 String city = parts[0].trim();
+                double airDistance = Double.parseDouble(parts[1].trim());
+                double roadDistance = Double.parseDouble(parts[2].trim());
                 graph.put(city, new ArrayList<>());
+                airDistances.put(city, airDistance);
+                streetDistances.put(city, roadDistance);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -43,16 +58,31 @@ public class AStarAlgorithm {
                 String[] parts = line.split(",");
                 String city1 = parts[0].trim();
                 String city2 = parts[1].trim();
-                double distance = Double.parseDouble(parts[2].trim());
+                double roadDistance = Double.parseDouble(parts[2].trim());
 
                 if (graph.containsKey(city1) && graph.containsKey(city2)) {
-                    graph.get(city1).add(new Road(city2, distance));
-                    graph.get(city2).add(new Road(city1, distance));
-                    streetDistances.put(city1 + "-" + city2, distance);
-                    streetDistances.put(city2 + "-" + city1, distance);
+                    graph.get(city1).add(new Road(city2, roadDistance));
+                    graph.get(city2).add(new Road(city1, roadDistance));
+                    streetDistances.put(city1 + "-" + city2, roadDistance);
+                    streetDistances.put(city2 + "-" + city1, roadDistance);
                 } else {
                     System.err.println("Invalid city name in the Roads.csv file: " + city1 + " or " + city2);
                 }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Read AirDistance.csv file
+        try (BufferedReader br = new BufferedReader(new FileReader(AIR_DISTANCE_FILE))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                String city1 = parts[0].trim();
+                String city2 = parts[1].trim();
+                double airDistance = Double.parseDouble(parts[2].trim());
+                airDistances.put(city1 + "-" + city2, airDistance);
+                airDistances.put(city2 + "-" + city1, airDistance);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -85,14 +115,16 @@ public class AStarAlgorithm {
                 double distance = road.getDistance();
                 double tentativeGScore = gScore.getOrDefault(current, Double.MAX_VALUE) + distance;
 
-                if (tentativeGScore < gScore.getOrDefault(neighborCity, Double.MAX_VALUE)) {
-                    cameFrom.put(neighborCity, current);
-                    gScore.put(neighborCity, tentativeGScore);
-                    fScore.put(neighborCity, tentativeGScore + calculateDistance(neighborCity, goal));
+                if (visited.contains(neighborCity) && tentativeGScore >= gScore.getOrDefault(neighborCity, Double.MAX_VALUE)) {
+                    continue; // Skip to the next neighbor
+                }
 
-                    if (!visited.contains(neighborCity)) {
-                        openSet.add(neighborCity);
-                    }
+                cameFrom.put(neighborCity, current);
+                gScore.put(neighborCity, tentativeGScore);
+                fScore.put(neighborCity, tentativeGScore + calculateDistance(neighborCity, goal));
+
+                if (!openSet.contains(neighborCity)) {
+                    openSet.add(neighborCity);
                 }
             }
         }
@@ -114,8 +146,9 @@ public class AStarAlgorithm {
     }
 
     private static double calculateDistance(String city, String goal) {
-        String key = city + "-" + goal;
-        return streetDistances.getOrDefault(key, Double.MAX_VALUE);
+        double airDistance = airDistances.getOrDefault(city, Double.MAX_VALUE);
+        double roadDistance = streetDistances.getOrDefault(city + "-" + goal, Double.MAX_VALUE);
+        return airDistance + roadDistance;
     }
 
     private static class Road {

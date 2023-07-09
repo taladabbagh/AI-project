@@ -7,7 +7,7 @@ import java.util.*;
 
 public class GreedyAlgorithm {
     private static final String CITIES_FILE = "C:/Users/Tala Dabbagh/OneDrive/Desktop/AI/demo/src/main/resources/com/example/demo/Cities.csv";
-    private static final String ROADS_FILE = "C:/Users/Tala Dabbagh/OneDrive/Desktop/AI/demo/src/main/resources/com/example/demo/Roads.csv";
+    private static final String ROADS_FILE = "C:/Users/Tala Dabbagh/OneDrive/Desktop/AI/demo/src/main/resources/com/example/demo/AirDistance.csv";
 
     private static Map<String, List<Road>> graph;
     private static Map<String, Double> streetDistances;
